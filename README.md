@@ -52,6 +52,9 @@ See the Github Pages Starter template repository at: https://github.com/MUSA-620
   - [Introduction to CSS and Tutorials](https://developer.mozilla.org/en-US/docs/Learn/CSS/Introduction_to_CSS)
 - Dash
   - [User Guide](https://dash.plot.ly/)
+  - [Dash core components](https://dash.plot.ly/dash-core-components)
+  - [Dash HTML components](https://dash.plot.ly/dash-html-components)
   - [App Gallery](https://dash.plot.ly/gallery)
   - [Plotly Documentation](https://plot.ly/python/)
-  - [Deploying a Dash app](https://dash.plot.ly/deployment)
+- [Deploying a Dash app](https://dash.plot.ly/deployment)
+- [Heroku guide to Python](https://devcenter.heroku.com/articles/getting-started-with-python)
