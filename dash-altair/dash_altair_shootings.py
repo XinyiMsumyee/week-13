@@ -3,7 +3,7 @@ import dash_core_components as dcc
 import dash_html_components as html
 import altair as alt
 import io
-import requests
+import carto2gpd
 import geopandas as gpd
 import altair as alt
 
@@ -34,15 +34,17 @@ def get_data(days):
     gdf : GeoDataFrame
         the data frame holding the queried data
     """
-    query = "SELECT * FROM shootings WHERE date_ >= current_date - %d" % (days)
-    r = requests.get(
-        "https://phl.carto.com/api/v2/sql", params={"q": query, "format": "geojson"}
-    )
-    gdf = gpd.GeoDataFrame.from_features(r.json(), crs={"init": "epsg:4326"})
-    gdf = gdf.dropna()
+    # Query for the data
+    URL = "https://phl.carto.com/api/v2/sql"
+    WHERE = f"date_ >= current_date - {days}"
+    gdf = carto2gpd.get(URL, "shootings", where=WHERE)
 
+    # Re-map the fatal column to Yes/No
     gdf["fatal"] = gdf["fatal"].map({0: "No", 1: "Yes"})
 
+    # Remove entries where fatal is NaN
+    gdf = gdf.dropna(subset=['fatal'])
+    
     return gdf
 
 
@@ -87,7 +89,7 @@ def make_altair_chart(data, days):
         .properties(
             width=400,
             height=800,
-            title="Shootings in the Last %d Days by Neighborhood" % days,
+            title=f"Shootings in the Last {days} Days by Neighborhood",
         )
     )
 
@@ -183,7 +185,7 @@ def render(days):
     shootings = len(gdf)
     homicides = (gdf.fatal == "Yes").sum()
     args = (shootings, homicides, days)
-    title = "There have been %d shootings and %d homicides in the last %d days." % args
+    title = f"There have been {shootings} shootings and {homicides} homicides in the last {days} days."
 
     # do a spatial join with ZIP codes
     hoods.crs = gdf.crs

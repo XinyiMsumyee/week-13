@@ -5,6 +5,7 @@ import requests
 import geopandas as gpd
 import folium
 from folium.plugins import HeatMap
+import carto2gpd
 
 # initialize the app
 external_stylesheets = ["https://codepen.io/chriddyp/pen/bWLwgP.css"]
@@ -28,15 +29,18 @@ def get_data(days):
     gdf : GeoDataFrame
         the data frame holding the queried data
     """
-    query = "SELECT * FROM shootings WHERE date_ >= current_date - %d" % (days)
-    r = requests.get(
-        "https://phl.carto.com/api/v2/sql", params={"q": query, "format": "geojson"}
-    )
-    gdf = gpd.GeoDataFrame.from_features(r.json(), crs={"init": "epsg:4326"})
-    gdf = gdf.dropna()
+    # Query for the data
+    URL = "https://phl.carto.com/api/v2/sql"
+    WHERE = f"date_ >= current_date - {days}"
+    gdf = carto2gpd.get(URL, "shootings", where=WHERE)
 
+    # Add lat/lng columns
     gdf["lat"] = gdf.geometry.y
     gdf["lng"] = gdf.geometry.x
+
+    # Remove rows with missing geo coordinates
+    gdf = gdf.dropna(subset=["lat", "lng"])
+
     return gdf
 
 
@@ -113,7 +117,7 @@ def render(days):
     # make and return our map
     map = get_folium_map(gdf, days)
 
-    text = "Days = %d" % days
+    text = f"Days = {days}"
 
     return map, text
 
