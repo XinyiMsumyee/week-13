@@ -43,8 +43,8 @@ def get_data(days):
     gdf["fatal"] = gdf["fatal"].map({0: "No", 1: "Yes"})
 
     # Remove entries where fatal is NaN
-    gdf = gdf.dropna(subset=['fatal'])
-    
+    gdf = gdf.dropna(subset=["fatal"])
+
     return gdf
 
 
@@ -197,11 +197,11 @@ def render(days):
     chart = make_altair_chart(joined, days)
 
     # Save html as a StringIO object in memory
-    cars_html = io.StringIO()
-    chart.save(cars_html, "html")
+    html = io.StringIO()
+    chart.save(html, "html")
 
     # Return the html from StringIO object
-    return cars_html.getvalue(), title
+    return html.getvalue(), title
 
 
 if __name__ == "__main__":
