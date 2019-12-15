@@ -103,6 +103,34 @@ def render(x_axis, y_axis):
         .encode(x=alt.X("Horsepower:Q", bin=True), y="count()", color="Origin:N")
         .transform_filter(brush.ref())
     ).properties(height=375)
+    
+    
+    # initialize the Folium map
+    origin = gpd.tools.geocode(self.From, provider='nominatim', user_agent="my-application")
+    destination = gpd.tools.geocode(self.To, provider='nominatim', user_agent="my-application")
+
+    start = list(zip(origin.geometry.y, origin.geometry.x))
+    end = list(zip(destination.geometry.y, destination.geometry.x))
+
+    orig_node = ox.get_nearest_node(G, start[0]) 
+    dest_node = ox.get_nearest_node(G, end[0])
+
+    route = nx.shortest_path(G, 
+                     orig_node, dest_node, 
+                     weight='length')
+
+    # The interactive map of the street network
+    graph_map = ox.plot_graph_folium(G, popup_attribute="name", edge_width=2)
+
+    # The interactive map of the route, with the streets in the background
+    route_graph_map = ox.plot_route_folium(G, route, route_map=graph_map)
+
+    filepath = 'foliumChart.html'
+    route_graph_map.save(filepath)
+
+
+    # return the Pane object
+    #return IFrame(filepath,width=600, height=500)
 
     # the combined chart
     chart = alt.hconcat(scatter, hist)
@@ -110,7 +138,7 @@ def render(x_axis, y_axis):
     # SAVE TO HTML AND THEN RETURN
     # Save html as a StringIO object in memory
     cars_html = io.StringIO()
-    chart.save(cars_html, "html")
+    route_graph_map.save(cars_html, "html")
 
     # Return the html from StringIO object
     return cars_html.getvalue()
